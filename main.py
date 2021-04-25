@@ -99,7 +99,6 @@ def mutate(individual):
 def recombine(parents):
     first_child = {}
     second_child = {}
-    cut_idx = random.randint(0, 9)
     keys = [
         'hidden_layer_sizes',
         'activation',
@@ -113,7 +112,7 @@ def recombine(parents):
         'n_iter_no_change'
     ]
     for idx, i in enumerate(keys):
-        if idx <= cut_idx:
+        if idx%2 == 0:
             first_child[i] = parents[0][i]
             second_child[i] = parents[1][i]
         else:
@@ -153,8 +152,8 @@ def eval(population_fitness):
     return None
 
 if __name__ == '__main__':
-    f = open("roleta_output", "w")
-    arquivo = open('roleta_pickle_out', 'wb')
+    f = open("roleta_crossorver_output", "w")
+    arquivo = open('roleta_crossorver_pickle_out', 'wb')
     population = init_population()
     population_fitness = calculate_fitness(population)
     # population_fitness = list(map(lambda x: (x,0.1), population))
