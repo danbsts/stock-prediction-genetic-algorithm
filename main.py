@@ -1,3 +1,4 @@
+import pickle
 import random
 import numpy as np
 import pandas as pd
@@ -10,7 +11,7 @@ solver = ['lbfgs', 'sgd', 'adam']
 learning_rate = ['constant', 'invscaling', 'adaptive']
 bool_array = [False, True]
 
-population_size = 6 # vai demorar 7 anos
+population_size = 40
 generation_size = 100
 
 apple = pd.read_csv('Apple.csv')
@@ -24,7 +25,6 @@ def calculate_fitness(population):
     global X_train, y_train, X_test
     fitness = []
     for idx, individual in enumerate(population):
-        print("Filho", idx)
         try:
             regr = MLPRegressor(
                 hidden_layer_sizes=individual['hidden_layer_sizes'],
@@ -58,7 +58,6 @@ def parent_selection(population_fitness):
     return list(map(lambda tup: tup[0], selected_parents)) #2 parents
 
 def mutate(individual):
-    print('individual', individual)
     params = [
         ('hidden_layer_sizes', random.randint(1, 20)), # hidden_layer_sizes - int
         ('activation', random.randint(0, 3)), # activation - object
@@ -78,7 +77,6 @@ def mutate(individual):
     return individual
 
 def recombine(parents):
-    print('parents -> ',parents)
     first_child = {}
     second_child = {}
     cut_idx = random.randint(0, 9)
@@ -135,9 +133,9 @@ def eval(population_fitness):
     return None
 
 if __name__ == '__main__':
-    print('bom dia casada')
+    f = open("output", "w")
+    arquivo = open('pickle_out', 'wb')
     population = init_population()
-    print('pop iniciada')
     population_fitness = calculate_fitness(population)
     # population_fitness = list(map(lambda x: (x,0.1), population))
     solution = eval(population_fitness)
@@ -152,10 +150,15 @@ if __name__ == '__main__':
         population_fitness.append(children[1])
         population_fitness = survival_selection(population_fitness, parents)
         solution = eval(population_fitness)
-        print(list(map(lambda x: x[1], population_fitness)))
+        # print(list(map(lambda x: x[1], population_fitness)))
+        pickle.dump({f'Generation {count}': list(map(lambda x: x[1], population_fitness))}, arquivo)
+        f.write(f"Generation {count}\n")
+        f.write(f'[{", ".join(str(e) for e in list(map(lambda x: x[1], population_fitness)))}]\n\n')
         count += 1
     if count == generation_size:
         print(-1)
     else:
         total_converged = len(list(filter(lambda x : x[1] == 0, population_fitness)))
         print(count, total_converged)
+    arquivo.close()
+    f.close()
