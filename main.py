@@ -45,16 +45,35 @@ def calculate_fitness(population):
             fitness.append((individual, float('inf')))
     return fitness
 
-def select_random_parents(population_fitness):
-    random_parents = []
-    for i in range(5):
-        random_parents.append(population_fitness[random.randint(0,population_size - 1)])
-    return random_parents
+def spin_wheel(roleta, sorted_probability):
+    for idx, probability in enumerate(roleta):
+        if idx > 0:
+            if(sorted_probability <= probability and sorted_probability > roleta[idx-1]):
+                break
+        else:
+            if(sorted_probability <= probability):
+                break
+    return idx
 
-def parent_selection(population_fitness):
-    parents = select_random_parents(population_fitness)
-    parents.sort(key=lambda tup: tup[1])
-    selected_parents = parents[0:2]
+def parent_selection(population):
+    #parents = select_random_parents(population)
+    total_fitness = reduce(lambda x,y: x + (1/y[1]), population,0)
+    parents = population
+    roleta = []
+    current_probability=0
+    selected_parents = []
+    parents.sort(key=lambda tup: tup[1], reverse=True)
+    for parent in parents:
+        roleta.append(current_probability + ((1/parent[1])/total_fitness))
+        current_probability = roleta[-1]
+    first_parent_id = spin_wheel(roleta, random.random())
+    selected_parents.append(parents[first_parent_id])
+    second_parent_id = spin_wheel(roleta, random.random())
+    selected_parents.append(parents[second_parent_id])
+    while(first_parent_id == second_parent_id):
+        second_parent_id =spin_wheel(roleta, random.random())
+        selected_parents[1] = parents[second_parent_id]    
+
     return list(map(lambda tup: tup[0], selected_parents)) #2 parents
 
 def mutate(individual):
@@ -133,8 +152,8 @@ def eval(population_fitness):
     return None
 
 if __name__ == '__main__':
-    f = open("output", "w")
-    arquivo = open('pickle_out', 'wb')
+    f = open("roleta_output", "w")
+    arquivo = open('roleta_pickle_out', 'wb')
     population = init_population()
     population_fitness = calculate_fitness(population)
     # population_fitness = list(map(lambda x: (x,0.1), population))
