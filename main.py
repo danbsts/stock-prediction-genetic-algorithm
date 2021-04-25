@@ -18,7 +18,7 @@ apple = pd.read_csv('Apple.csv')
 apple = apple.replace([np.inf, -np.inf], np.nan)
 apple = apple.dropna()
 y = apple['Close']
-x = apple.drop(columns=['Adj Close', 'Date', 'Close', 'Volume'])
+x = apple.drop(columns=['Subtracao','Date','Open2','Close2'])
 X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=1)
 
 def calculate_fitness(population):
